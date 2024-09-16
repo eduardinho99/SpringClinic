@@ -3,6 +3,8 @@ package com.generation.clinic.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.generation.clinic.model.entities.Gender;
 import com.generation.clinic.model.entities.Patient;
 
 
@@ -22,6 +24,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long>
 	 */
 	
 	List<Patient> findBySurnameContaining(String n);
-	List<Patient> findByGender(String gender);
+	List<Patient> findByGender(Gender gender);
 	List<Patient> findByAgeGreaterThanEqual(int age);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.generation.clinic.model.entities.Gender;
 import com.generation.clinic.model.entities.Patient;
 import com.generation.clinic.repository.PatientRepository;
 
@@ -74,7 +75,8 @@ public class PatientAPI
 	@GetMapping("/patients/bygender/{gender}")
 	public List<Patient> findByGender(@PathVariable("gender") String gender)
 	{
-		return patientrepo.findByGender(gender);
+		Gender genderEnum = Gender.valueOf(gender);
+		return patientrepo.findByGender(genderEnum);
 	}
 	
 	@GetMapping("/patients/overage/{age}")
