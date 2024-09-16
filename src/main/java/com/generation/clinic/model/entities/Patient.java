@@ -14,7 +14,7 @@ public class Patient
 	
 	int age;
 	String name, surname;
-	Gender gender;
+	String gender;
 
 	public int getId() {
 		return id;
@@ -48,11 +48,11 @@ public class Patient
 		this.surname = surname;
 	}
 
-	public Gender getGender() {
+	public String getGender() {
 		return gender;
 	}
 
-	public void setGender(Gender gender) {
+	public void setGender(String gender) {
 		this.gender = gender;
 	};
 	

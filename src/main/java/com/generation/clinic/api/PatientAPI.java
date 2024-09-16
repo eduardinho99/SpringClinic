@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.generation.clinic.model.entities.Gender;
@@ -17,6 +20,8 @@ import com.generation.clinic.model.entities.Patient;
 import com.generation.clinic.repository.PatientRepository;
 
 @RestController
+@RequestMapping("/patients")
+//aggiungo un prefisso per ogni richiesta
 public class PatientAPI 
 {
 	@Autowired
@@ -35,54 +40,125 @@ public class PatientAPI
 		GET /patients/overage/40				=> tutti i quarantenni
 	 */
 	
-	@GetMapping("/patients")
-	public List<Patient> getPatients()
+	
+	/*
+	 * HARDENING DEL CODICE
+	 * rendere il codice più sicuro mettendo dei controlli
+	 * per eventuali errori dell'Utente
+	 */
+	
+	@GetMapping("")
+	public ResponseEntity<List<Patient>> getPatients()
 	{
-		return patientrepo.findAll();
+		List<Patient> patient = patientrepo.findAll();
+		return 		patient.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+					new ResponseEntity<List<Patient>>(patient, HttpStatus.OK);
 	}
 	
-	@GetMapping("/patients/byId/{id}")
-	public Optional<Patient> getPatientById(@PathVariable("id") long id)
+	@GetMapping("/byId/{id}")
+	public ResponseEntity<Patient> getPatientById(@PathVariable("id") long id)
 	{
-		return patientrepo.findById(id);
-		//Chiedere a ferdinando del perché di Optional<Patient>
+		Optional<Patient> patient = patientrepo.findById(id);
+		return 		patient.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+					new ResponseEntity<Patient>(patient.get(), HttpStatus.OK);
 	}
 	
-	@PostMapping("/patients")
-	public Patient insertPatient(@RequestBody Patient newPatient)
+	@PostMapping("")
+	public ResponseEntity<Patient> insertPatient(@RequestBody Patient newPatient)
 	{
-		return patientrepo.save(newPatient);
+		Optional<Patient> patient = patientrepo.findById((long)newPatient.getId());
+		
+		if(patient.isPresent())
+		{
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		try 
+		{
+			newPatient = patientrepo.save(newPatient);
+			return new ResponseEntity<Patient>(newPatient, HttpStatus.CREATED);
+			
+		} catch 
+		(Exception e) 
+		{
+			e.printStackTrace(); //il messaggio viene stampato solo in console, l'utente non vedrà nulla
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);			
+		}
 	}
 	
-	@PutMapping("/patients")
-	public Patient updatePatient(@RequestBody Patient newPatient)
+	@PutMapping("")
+	public ResponseEntity<Patient> updatePatient(@RequestBody Patient oldPatient)
 	{
-		return patientrepo.save(newPatient);
+		Optional<Patient> patient = patientrepo.findById((long)oldPatient.getId());
+		
+		if(patient.isEmpty())
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		
+		try 
+		{
+			oldPatient = patientrepo.save(oldPatient);
+			return new ResponseEntity<Patient>(oldPatient, HttpStatus.CREATED);
+			
+		} catch 
+		(Exception e) 
+		{
+			e.printStackTrace(); //il messaggio viene stampato solo in console, l'utente non vedrà nulla
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);			
+		}
 	}
 	
-	@DeleteMapping("/patients/{id}")
-	public void deletePatient(@PathVariable("id") long id)
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Object> deletePatient(@PathVariable("id") long id)
 	{
-		patientrepo.deleteById(id);
+		Optional<Patient> patient = patientrepo.findById(id);
+		
+		if(patient.isEmpty())
+		{
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		
+		try 
+		{
+			patientrepo.deleteById(id);
+			return new ResponseEntity<>(HttpStatus.OK);
+			
+		} catch 
+		(Exception e) 
+		{
+			e.printStackTrace(); //il messaggio viene stampato solo in console, l'utente non vedrà nulla
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);			
+		}
 	}
 	
-	@GetMapping("/patients/bysurname/{surname}")
-	public List<Patient> findBySurname(@PathVariable("surname") String surname)
+	@GetMapping("/bysurname/{surname}")
+	public ResponseEntity<List<Patient>> findBySurname(@PathVariable("surname") String surname)
 	{
-		return patientrepo.findBySurnameContaining(surname);
+		List<Patient> patient = patientrepo.findBySurnameContaining(surname);
+		return 		patient.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+					new ResponseEntity<List<Patient>>(patient, HttpStatus.OK);
 	}
 	
-	@GetMapping("/patients/bygender/{gender}")
-	public List<Patient> findByGender(@PathVariable("gender") String gender)
+	@GetMapping("/bygender/{gender}")
+	public ResponseEntity<List<Patient>> findByGender(@PathVariable("gender") String gender)
 	{
-		Gender genderEnum = Gender.valueOf(gender);
-		return patientrepo.findByGender(genderEnum);
+		List<Patient> patient = patientrepo.findByGender(gender);
+		return 		patient.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+					new ResponseEntity<List<Patient>>(patient, HttpStatus.OK);
 	}
 	
-	@GetMapping("/patients/overage/{age}")
-	public List<Patient> findByAge(@PathVariable("age") int age)
+	@GetMapping("/overage/{age}")
+	public ResponseEntity<List<Patient>> findByAge(@PathVariable("age") int age)
 	{
-		return patientrepo.findByAgeGreaterThanEqual(age);
+		List<Patient> patient = patientrepo.findByAgeGreaterThanEqual(age);
+		return 		patient.isEmpty() ? 
+					new ResponseEntity<>(HttpStatus.NOT_FOUND) : 
+					new ResponseEntity<List<Patient>>(patient, HttpStatus.OK);
 	}
 	
 }

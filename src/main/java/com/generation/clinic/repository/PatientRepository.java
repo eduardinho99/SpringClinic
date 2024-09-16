@@ -24,6 +24,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long>
 	 */
 	
 	List<Patient> findBySurnameContaining(String n);
-	List<Patient> findByGender(Gender gender);
+	List<Patient> findByGender(String gender);
 	List<Patient> findByAgeGreaterThanEqual(int age);
 }
